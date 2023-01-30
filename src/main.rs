@@ -8,11 +8,18 @@ const WIDTH: f64 = 1280.;
 const HEIGHT: f64 = 720.;
 const PIN_RADIUS: f64 = 5.;
 const PIN_INTERVAL: f64 = 35.;
+const ROW_COUNT: usize = 15;
 
 struct App {
     ctx: CanvasRenderingContext2d,
     last_frame_ms: f64,
-    pin_x: f64,
+    choices: Vec<Vec<PinChoices>>,
+}
+
+#[derive(Debug, Default, Clone, Copy)]
+struct PinChoices {
+    times_left: u64,
+    times_right: u64,
 }
 
 fn main() -> Result<(), JsValue> {
@@ -31,11 +38,15 @@ fn main() -> Result<(), JsValue> {
         .unwrap()
         .dyn_into()
         .unwrap();
+    let choices = (0..ROW_COUNT - 1)
+        .map(|i| (0..=i).map(|_| PinChoices::default()).collect())
+        .collect();
     let mut app = App {
         ctx,
         last_frame_ms: window().performance().unwrap().now(),
-        pin_x: 0.,
+        choices,
     };
+    log::info!("{:?}", app.choices);
     let cb_loop = Rc::new(RefCell::new(None));
     let cb_init = cb_loop.clone();
     *cb_init.borrow_mut() = Some(Closure::new(Box::new(move |t: f64| {
@@ -62,11 +73,18 @@ fn draw(t: f64, app: &mut App) -> Result<(), JsValue> {
     app.last_frame_ms = t;
     app.clear_background();
     app.draw_pins()?;
-    app.pin_x += dt * 10.;
-    app.draw_pin(
-        (app.pin_x).cos() * 100. + 200.,
-        (app.pin_x).sin() * 100. + 200.,
-    )?;
+
+    let mut current_pin = 0;
+    for i in 0..ROW_COUNT - 1 {
+        let goes_left: bool = rand::random();
+        if goes_left {
+            app.choices[i][current_pin].times_left += 1;
+        } else {
+            app.choices[i][current_pin].times_right += 1;
+            current_pin += 1;
+        }
+    }
+
     Ok(())
 }
 
@@ -98,10 +116,6 @@ impl App {
         self.ctx
             .ellipse(x, y, PIN_RADIUS, PIN_RADIUS, 0., 0., f64::consts::TAU)?;
         self.ctx.fill();
-        Ok(())
-    }
-
-    pub fn draw_random_path(&self) -> Result<(), JsValue> {
         Ok(())
     }
 }
