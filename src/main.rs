@@ -9,7 +9,7 @@ const HEIGHT: f64 = 1080.;
 const PIN_RADIUS: f64 = 7.;
 const PIN_INTERVAL: f64 = 40.;
 const PINS_START_Y: f64 = PIN_INTERVAL;
-const ROW_COUNT: usize = 15;
+const ROW_COUNT: usize = 16;
 const HISTOGRAM_MAX_Y: f64 = PINS_START_Y + ROW_COUNT as f64 * PIN_INTERVAL;
 
 struct App {
@@ -42,7 +42,7 @@ fn main() -> Result<(), JsValue> {
         .unwrap()
         .dyn_into()
         .unwrap();
-    let choices = (0..ROW_COUNT - 1)
+    let choices = (0..ROW_COUNT)
         .map(|i| (0..=i).map(|_| PinChoices::default()).collect())
         .collect();
     let mut app = App {
@@ -89,19 +89,25 @@ fn draw(t: f64, app: &mut App) -> Result<(), JsValue> {
 
     app.total_paths += 1;
     let mut current_pin = 0;
-    for i in 0..ROW_COUNT - 1 {
-        for j in 0..=i {
-            app.draw_segment(i, j, j, app.choices[i][j].times_left as f64 / 300.)?;
-            app.draw_segment(i, j, j + 1, app.choices[i][j].times_right as f64 / 300.)?;
+    for i in 0..ROW_COUNT {
+        if i < ROW_COUNT - 1 {
+            for j in 0..=i {
+                app.draw_segment(i, j, j, app.choices[i][j].times_left as f64 / 300.)?;
+                app.draw_segment(i, j, j + 1, app.choices[i][j].times_right as f64 / 300.)?;
+            }
         }
 
         let goes_left: bool = rand::random();
         if goes_left {
             app.choices[i][current_pin].times_left += 1;
-            app.draw_segment_with_color(i, current_pin, current_pin, "rgb(255, 51, 51)")?;
+            if i < ROW_COUNT - 1 {
+                app.draw_segment_with_color(i, current_pin, current_pin, "rgb(255, 51, 51)")?;
+            }
         } else {
             app.choices[i][current_pin].times_right += 1;
-            app.draw_segment_with_color(i, current_pin, current_pin + 1, "rgb(255, 51, 51)")?;
+            if i < ROW_COUNT - 1 {
+                app.draw_segment_with_color(i, current_pin, current_pin + 1, "rgb(255, 51, 51)")?;
+            }
             current_pin += 1;
         }
     }
@@ -113,10 +119,10 @@ fn draw(t: f64, app: &mut App) -> Result<(), JsValue> {
         .map(|i| {
             let mut p = 0;
             if i >= 1 {
-                p += app.choices[ROW_COUNT - 2][i - 1].times_right;
+                p += app.choices[ROW_COUNT - 1][i - 1].times_right;
             }
             if i < ROW_COUNT - 1 {
-                p += app.choices[ROW_COUNT - 2][i].times_left;
+                p += app.choices[ROW_COUNT - 1][i].times_left;
             }
             if p > p_max {
                 p_max = p;
@@ -146,13 +152,13 @@ impl App {
     }
 
     pub fn draw_pins(&self) -> Result<(), JsValue> {
-        for i in 0..15 {
+        for i in 0..ROW_COUNT {
             self.draw_row(i)?;
         }
         Ok(())
     }
 
-    pub fn draw_row(&self, n: u32) -> Result<(), JsValue> {
+    pub fn draw_row(&self, n: usize) -> Result<(), JsValue> {
         let y = PIN_INTERVAL * n as f64 + PINS_START_Y;
         let x_start = WIDTH / 2. - (n as f64 / 2.) * PIN_INTERVAL;
         for i in 0..=n {

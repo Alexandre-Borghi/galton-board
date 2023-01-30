@@ -11,6 +11,8 @@
 - [ ] Make a slider to adjust the speed of the animation
   - [ ] Allow doing multiple paths in one frame
     - [ ] Separate the line-drawing code from the random code
+- [ ] Draw normal law on top of histogram
+- [ ] Show total paths count
 - [ ] Animate drawing segment-by-segment
 - [ ] Refactor
   - [ ] Make a function that returns the position of a pin from its "coordinates"
