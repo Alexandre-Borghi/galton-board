@@ -367,8 +367,14 @@ function getImports() {
         const ret = result;
         return ret;
     };
+    imports.wbg.__wbg_setstrokeStyle_899ea3720dae323b = function(arg0, arg1) {
+        getObject(arg0).strokeStyle = getObject(arg1);
+    };
     imports.wbg.__wbg_setfillStyle_53ccf2a9886c1c4d = function(arg0, arg1) {
         getObject(arg0).fillStyle = getObject(arg1);
+    };
+    imports.wbg.__wbg_setlineWidth_64004648773fed7a = function(arg0, arg1) {
+        getObject(arg0).lineWidth = arg1;
     };
     imports.wbg.__wbg_beginPath_4e91b7092d0d33d9 = function(arg0) {
         getObject(arg0).beginPath();
@@ -376,9 +382,18 @@ function getImports() {
     imports.wbg.__wbg_fill_8ec436f419a0d161 = function(arg0) {
         getObject(arg0).fill();
     };
+    imports.wbg.__wbg_stroke_85dee7d87c4a6ead = function(arg0) {
+        getObject(arg0).stroke();
+    };
     imports.wbg.__wbg_ellipse_b69a011e539ab5a2 = function() { return handleError(function (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
         getObject(arg0).ellipse(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
     }, arguments) };
+    imports.wbg.__wbg_lineTo_dbe49320dd6e392a = function(arg0, arg1, arg2) {
+        getObject(arg0).lineTo(arg1, arg2);
+    };
+    imports.wbg.__wbg_moveTo_15a09390bee05586 = function(arg0, arg1, arg2) {
+        getObject(arg0).moveTo(arg1, arg2);
+    };
     imports.wbg.__wbg_fillRect_c7a19e13c5242507 = function(arg0, arg1, arg2, arg3, arg4) {
         getObject(arg0).fillRect(arg1, arg2, arg3, arg4);
     };
@@ -486,7 +501,7 @@ function getImports() {
         const ret = wasm.memory;
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_closure_wrapper119 = function(arg0, arg1, arg2) {
+    imports.wbg.__wbindgen_closure_wrapper124 = function(arg0, arg1, arg2) {
         const ret = makeMutClosure(arg0, arg1, 18, __wbg_adapter_24);
         return addHeapObject(ret);
     };
@@ -524,7 +539,7 @@ function initSync(module) {
 
 async function init(input) {
     if (typeof input === 'undefined') {
-        input = new URL('galton-board-39227a2963a6a37f_bg.wasm', import.meta.url);
+        input = new URL('galton-board-491f84a7cab35d94_bg.wasm', import.meta.url);
     }
     const imports = getImports();
 

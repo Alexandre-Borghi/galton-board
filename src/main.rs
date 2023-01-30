@@ -6,6 +6,7 @@ use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, Window};
 
 const WIDTH: f64 = 1280.;
 const HEIGHT: f64 = 720.;
+const PINS_START_Y: f64 = 100.;
 const PIN_RADIUS: f64 = 5.;
 const PIN_INTERVAL: f64 = 35.;
 const ROW_COUNT: usize = 15;
@@ -14,6 +15,7 @@ struct App {
     ctx: CanvasRenderingContext2d,
     last_frame_ms: f64,
     choices: Vec<Vec<PinChoices>>,
+    frame_time: f64,
 }
 
 #[derive(Debug, Default, Clone, Copy)]
@@ -45,6 +47,7 @@ fn main() -> Result<(), JsValue> {
         ctx,
         last_frame_ms: window().performance().unwrap().now(),
         choices,
+        frame_time: 0.,
     };
     log::info!("{:?}", app.choices);
     let cb_loop = Rc::new(RefCell::new(None));
@@ -70,6 +73,12 @@ fn window() -> Window {
 
 fn draw(t: f64, app: &mut App) -> Result<(), JsValue> {
     let dt = (t - app.last_frame_ms) / 1000.;
+    app.frame_time += dt;
+    const FPS: f64 = 1.;
+    if app.frame_time < 1. / FPS {
+        return Ok(());
+    }
+    app.frame_time -= FPS;
     app.last_frame_ms = t;
     app.clear_background();
     app.draw_pins()?;
@@ -79,8 +88,10 @@ fn draw(t: f64, app: &mut App) -> Result<(), JsValue> {
         let goes_left: bool = rand::random();
         if goes_left {
             app.choices[i][current_pin].times_left += 1;
+            app.draw_segment(i, current_pin, current_pin)?;
         } else {
             app.choices[i][current_pin].times_right += 1;
+            app.draw_segment(i, current_pin, current_pin + 1)?;
             current_pin += 1;
         }
     }
@@ -102,7 +113,7 @@ impl App {
     }
 
     pub fn draw_row(&self, n: u32) -> Result<(), JsValue> {
-        let y = PIN_INTERVAL * n as f64 + 100.;
+        let y = PIN_INTERVAL * n as f64 + PINS_START_Y;
         let x_start = WIDTH / 2. - (n as f64 / 2.) * PIN_INTERVAL;
         for i in 0..=n {
             self.draw_pin(x_start + i as f64 * PIN_INTERVAL, y)?;
@@ -116,6 +127,21 @@ impl App {
         self.ctx
             .ellipse(x, y, PIN_RADIUS, PIN_RADIUS, 0., 0., f64::consts::TAU)?;
         self.ctx.fill();
+        Ok(())
+    }
+
+    pub fn draw_segment(&self, row: usize, pin_a: usize, pin_b: usize) -> Result<(), JsValue> {
+        let pin_a_x = WIDTH / 2. - (row as f64 / 2.) * PIN_INTERVAL + pin_a as f64 * PIN_INTERVAL;
+        let pin_a_y = PIN_INTERVAL * row as f64 + PINS_START_Y;
+        let pin_b_x =
+            WIDTH / 2. - ((row + 1) as f64 / 2.) * PIN_INTERVAL + pin_b as f64 * PIN_INTERVAL;
+        let pin_b_y = PIN_INTERVAL * (row + 1) as f64 + PINS_START_Y;
+        self.ctx.set_stroke_style(&"#ffffff".into());
+        self.ctx.set_line_width(3.);
+        self.ctx.begin_path();
+        self.ctx.move_to(pin_a_x, pin_a_y);
+        self.ctx.line_to(pin_b_x, pin_b_y);
+        self.ctx.stroke();
         Ok(())
     }
 }
