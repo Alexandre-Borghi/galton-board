@@ -108,12 +108,6 @@ fn draw(t: f64, app: &mut App) -> Result<(), JsValue> {
 
     // Draw histogram
 
-    app.ctx.begin_path();
-    app.ctx.set_stroke_style(&"rgb(51, 255, 51)".into());
-    app.ctx.move_to(0., HISTOGRAM_MAX_Y);
-    app.ctx.line_to(WIDTH, HISTOGRAM_MAX_Y);
-    app.ctx.stroke();
-
     let mut p_max = 0;
     let ps = (0..ROW_COUNT)
         .map(|i| {
@@ -140,12 +134,6 @@ fn draw(t: f64, app: &mut App) -> Result<(), JsValue> {
         let h = (p as f64 / p_max as f64) * h_max;
 
         app.ctx.fill_rect(x - w / 2., y, w, h);
-
-        app.ctx.begin_path();
-        app.ctx.set_stroke_style(&"rgb(51, 255, 51)".into());
-        app.ctx.move_to(0., y);
-        app.ctx.line_to(WIDTH, y);
-        app.ctx.stroke();
     }
 
     Ok(())
