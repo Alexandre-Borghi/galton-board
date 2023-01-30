@@ -1,6 +1,6 @@
 use core::f64;
 use log::{debug, info};
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, fmt::format, rc::Rc};
 use wasm_bindgen::{prelude::Closure, JsCast, JsValue};
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, Window};
 
@@ -49,7 +49,7 @@ fn main() -> Result<(), JsValue> {
         last_frame_ms: window().performance().unwrap().now(),
         choices,
         frame_time: 0.,
-        total_frames = 0.,
+        total_paths: 0,
     };
     log::info!("{:?}", app.choices);
     let cb_loop = Rc::new(RefCell::new(None));
@@ -76,7 +76,7 @@ fn window() -> Window {
 fn draw(t: f64, app: &mut App) -> Result<(), JsValue> {
     let dt = (t - app.last_frame_ms) / 1000.;
     app.frame_time += dt;
-    const FPS: f64 = 200.;
+    const FPS: f64 = 20.;
     if app.frame_time < 1. / FPS {
         log::trace!("Skip frame");
         return Ok(());
@@ -89,17 +89,29 @@ fn draw(t: f64, app: &mut App) -> Result<(), JsValue> {
     app.total_paths += 1;
     let mut current_pin = 0;
     for i in 0..ROW_COUNT - 1 {
+        for j in 0..=i {
+            app.draw_segment(
+                i,
+                j,
+                j,
+                app.choices[i][j].times_left as f64 / app.total_paths as f64,
+            )?;
+            app.draw_segment(
+                i,
+                j,
+                j + 1,
+                app.choices[i][j].times_right as f64 / app.total_paths as f64,
+            )?;
+        }
+
         let goes_left: bool = rand::random();
         if goes_left {
             app.choices[i][current_pin].times_left += 1;
+            app.draw_segment_with_color(i, current_pin, current_pin, "rgb(255, 51, 51)")?;
         } else {
             app.choices[i][current_pin].times_right += 1;
+            app.draw_segment_with_color(i, current_pin, current_pin + 1, "rgb(255, 51, 51)")?;
             current_pin += 1;
-        }
-
-        for j in 0..=i {
-            app.draw_segment(i, j, j, app.choices[i][j].times_left as f64 / app.total_paths as f64)?;
-            app.draw_segment(i, j, j + 1, app.choices[i][j].times_left as f64 / app.total_paths as f64)?;
         }
     }
 
@@ -144,13 +156,23 @@ impl App {
         pin_b: usize,
         alpha: f64,
     ) -> Result<(), JsValue> {
+        self.draw_segment_with_color(row, pin_a, pin_b, &format!("rgb(255, 255, 255, {alpha})"))?;
+        Ok(())
+    }
+
+    pub fn draw_segment_with_color(
+        &self,
+        row: usize,
+        pin_a: usize,
+        pin_b: usize,
+        color: &str,
+    ) -> Result<(), JsValue> {
         let pin_a_x = WIDTH / 2. - (row as f64 / 2.) * PIN_INTERVAL + pin_a as f64 * PIN_INTERVAL;
         let pin_a_y = PIN_INTERVAL * row as f64 + PINS_START_Y;
         let pin_b_x =
             WIDTH / 2. - ((row + 1) as f64 / 2.) * PIN_INTERVAL + pin_b as f64 * PIN_INTERVAL;
         let pin_b_y = PIN_INTERVAL * (row + 1) as f64 + PINS_START_Y;
-        self.ctx
-            .set_stroke_style(&format!("rgba(255, 255, 255, {alpha})").into());
+        self.ctx.set_stroke_style(&color.into());
         self.ctx.set_line_width(3.);
         self.ctx.begin_path();
         self.ctx.move_to(pin_a_x, pin_a_y);
