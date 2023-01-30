@@ -4,12 +4,13 @@ use std::{cell::RefCell, fmt::format, rc::Rc};
 use wasm_bindgen::{prelude::Closure, JsCast, JsValue};
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, Window};
 
-const WIDTH: f64 = 1280.;
-const HEIGHT: f64 = 720.;
-const PINS_START_Y: f64 = 100.;
-const PIN_RADIUS: f64 = 5.;
-const PIN_INTERVAL: f64 = 35.;
+const WIDTH: f64 = 1920.;
+const HEIGHT: f64 = 1080.;
+const PIN_RADIUS: f64 = 7.;
+const PIN_INTERVAL: f64 = 40.;
+const PINS_START_Y: f64 = PIN_INTERVAL;
 const ROW_COUNT: usize = 15;
+const HISTOGRAM_MAX_Y: f64 = PINS_START_Y + ROW_COUNT as f64 * PIN_INTERVAL;
 
 struct App {
     ctx: CanvasRenderingContext2d,
@@ -76,7 +77,7 @@ fn window() -> Window {
 fn draw(t: f64, app: &mut App) -> Result<(), JsValue> {
     let dt = (t - app.last_frame_ms) / 1000.;
     app.frame_time += dt;
-    const FPS: f64 = 20.;
+    const FPS: f64 = 60.;
     if app.frame_time < 1. / FPS {
         log::trace!("Skip frame");
         return Ok(());
@@ -113,6 +114,48 @@ fn draw(t: f64, app: &mut App) -> Result<(), JsValue> {
             app.draw_segment_with_color(i, current_pin, current_pin + 1, "rgb(255, 51, 51)")?;
             current_pin += 1;
         }
+    }
+
+    // Draw histogram
+
+    app.ctx.begin_path();
+    app.ctx.set_stroke_style(&"rgb(51, 255, 51)".into());
+    app.ctx.move_to(0., HISTOGRAM_MAX_Y);
+    app.ctx.line_to(WIDTH, HISTOGRAM_MAX_Y);
+    app.ctx.stroke();
+
+    let mut p_max = 0;
+    let ps = (0..ROW_COUNT)
+        .map(|i| {
+            let mut p = 0;
+            if i >= 1 {
+                p += app.choices[ROW_COUNT - 2][i - 1].times_right;
+            }
+            if i < ROW_COUNT - 1 {
+                p += app.choices[ROW_COUNT - 2][i].times_left;
+            }
+            if p > p_max {
+                p_max = p;
+            }
+            p
+        })
+        .collect::<Vec<_>>();
+
+    for i in 0..ROW_COUNT {
+        let x = WIDTH / 2. - (ROW_COUNT as f64 / 2.) * PIN_INTERVAL + i as f64 * PIN_INTERVAL;
+        let y = HEIGHT - PIN_INTERVAL;
+        let w = PIN_INTERVAL / 2.;
+        let h_max = HISTOGRAM_MAX_Y - y;
+        let p = ps[i];
+        let h = (p as f64 / p_max as f64) * h_max;
+
+        app.ctx.fill_rect(x - w / 2., y, w, h);
+
+        app.ctx.begin_path();
+        app.ctx.set_stroke_style(&"rgb(51, 255, 51)".into());
+        app.ctx.move_to(0., y);
+        app.ctx.line_to(WIDTH, y);
+        app.ctx.stroke();
     }
 
     Ok(())
