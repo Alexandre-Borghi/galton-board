@@ -91,18 +91,8 @@ fn draw(t: f64, app: &mut App) -> Result<(), JsValue> {
     let mut current_pin = 0;
     for i in 0..ROW_COUNT - 1 {
         for j in 0..=i {
-            app.draw_segment(
-                i,
-                j,
-                j,
-                app.choices[i][j].times_left as f64 / app.total_paths as f64,
-            )?;
-            app.draw_segment(
-                i,
-                j,
-                j + 1,
-                app.choices[i][j].times_right as f64 / app.total_paths as f64,
-            )?;
+            app.draw_segment(i, j, j, app.choices[i][j].times_left as f64 / 300.)?;
+            app.draw_segment(i, j, j + 1, app.choices[i][j].times_right as f64 / 300.)?;
         }
 
         let goes_left: bool = rand::random();
