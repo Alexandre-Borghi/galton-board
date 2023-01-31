@@ -5,7 +5,10 @@ use std::{
     sync::{Arc, Mutex},
 };
 use wasm_bindgen::{prelude::Closure, JsCast, JsValue};
-use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, KeyboardEvent, Window};
+use web_sys::{
+    CanvasRenderingContext2d, HtmlCanvasElement, HtmlInputElement, InputEvent, KeyboardEvent,
+    Window,
+};
 
 const PIN_RADIUS: f64 = 7.;
 const PIN_INTERVAL: f64 = 40.;
@@ -22,6 +25,7 @@ struct App {
     choices: Vec<Vec<PinChoices>>,
     frame_time: f64,
     total_paths: u64,
+    animation_speed: f64,
 }
 
 #[derive(Debug, Default, Clone, Copy)]
@@ -55,6 +59,7 @@ fn main() -> Result<(), JsValue> {
         choices,
         frame_time: 0.,
         total_paths: 0,
+        animation_speed: 15.,
     }));
 
     let cb_loop = Rc::new(RefCell::new(None));
@@ -70,7 +75,8 @@ fn main() -> Result<(), JsValue> {
     }
 
     {
-        let cb = Closure::<dyn Fn(KeyboardEvent)>::new(move |e: KeyboardEvent| {
+        let app = app.clone();
+        let cb = Closure::<dyn Fn(_)>::new(move |e: KeyboardEvent| {
             if e.code() != "Space" {
                 return;
             }
@@ -78,6 +84,25 @@ fn main() -> Result<(), JsValue> {
             app.lock().unwrap().reset();
         });
         window().add_event_listener_with_callback("keydown", cb.as_ref().unchecked_ref())?;
+        cb.forget();
+    }
+
+    {
+        let animation_speed_slider: HtmlInputElement = document
+            .get_element_by_id("animation-speed")
+            .unwrap()
+            .dyn_into()?;
+        let cb = Closure::<dyn Fn(_)>::new(move |e: InputEvent| {
+            let new_val = e
+                .target()
+                .unwrap()
+                .dyn_into::<HtmlInputElement>()
+                .unwrap()
+                .value();
+            app.lock().unwrap().animation_speed = new_val.parse().unwrap();
+        });
+        animation_speed_slider
+            .add_event_listener_with_callback("input", cb.as_ref().unchecked_ref())?;
         cb.forget();
     }
 
@@ -98,12 +123,11 @@ fn draw(t: f64, app: &Arc<Mutex<App>>) -> Result<(), JsValue> {
     let mut app = app.lock().unwrap();
     let dt = (t - app.last_frame_ms) / 1000.;
     app.frame_time += dt;
-    const FPS: f64 = 60.;
-    if app.frame_time < 1. / FPS {
+    if app.frame_time < 1. / app.animation_speed {
         log::trace!("Skip frame");
         return Ok(());
     }
-    app.frame_time -= 1. / FPS;
+    app.frame_time -= 1. / app.animation_speed;
     app.last_frame_ms = t;
     app.clear_background();
     app.draw_pins()?;

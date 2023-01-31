@@ -5,7 +5,8 @@
       html,
       body {
         margin: 0;
-        background-color: rgb(63, 44, 44);
+        background-color: rgb(51, 51, 51);
+        color: white;
         height: 100%;
       }
 
@@ -16,7 +17,8 @@
       main {
         width: 100%;
         display: flex;
-        justify-content: center;
+        flex-direction: column;
+        align-items: center;
       }
 
       canvas {
@@ -25,15 +27,19 @@
       }
     </style>
   
-<link rel="preload" href="/galton-board-2b73be5bf88ff3d9_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
-<link rel="modulepreload" href="/galton-board-2b73be5bf88ff3d9.js"></head>
+<link rel="preload" href="/galton-board-6ddc7af2cb55a389_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
+<link rel="modulepreload" href="/galton-board-6ddc7af2cb55a389.js"></head>
   <body>
     <main>
       <canvas></canvas>
+      <div>
+        <label for="animation-speed">Animation speed: </label>
+        <input type="range" id="animation-speed" min="1" max="60" step="1" value="15">
+      </div>
     </main>
   
 
-<script type="module">import init from '/galton-board-2b73be5bf88ff3d9.js';init('/galton-board-2b73be5bf88ff3d9_bg.wasm');</script><script>(function () {
+<script type="module">import init from '/galton-board-6ddc7af2cb55a389.js';init('/galton-board-6ddc7af2cb55a389_bg.wasm');</script><script>(function () {
     var protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     var url = protocol + '//' + window.location.host + '/_trunk/ws';
     var poll_interval = 5000;

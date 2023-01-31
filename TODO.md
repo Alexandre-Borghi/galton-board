@@ -8,9 +8,9 @@
 - [x] Draw the new path in red
 - [x] Draw the histogram of the probabilities
 - [x] Make it possible to clear the canvas with a button/keyboard key
-- [ ] Make a slider to adjust the speed of the animation
-  - [ ] Allow doing multiple paths in one frame
-    - [ ] Separate the line-drawing code from the random code
+- [x] Make a slider to adjust the speed of the animation
+- [ ] Allow doing multiple paths in one frame
+  - [ ] Separate the line-drawing code from the random code to separate FPS capping from animation speed
 - [ ] Draw normal law on top of histogram
 - [ ] Show total paths count
 - [ ] Animate drawing segment-by-segment
