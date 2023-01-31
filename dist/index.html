@@ -13,15 +13,24 @@
         box-sizing: border-box;
       }
 
+      main {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+      }
+
       canvas {
-        max-height: 100%;
+        max-width: 100vw;
+        max-height: 100vh;
       }
     </style>
   
 <link rel="preload" href="/galton-board-2b73be5bf88ff3d9_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
 <link rel="modulepreload" href="/galton-board-2b73be5bf88ff3d9.js"></head>
   <body>
-    <canvas></canvas>
+    <main>
+      <canvas></canvas>
+    </main>
   
 
 <script type="module">import init from '/galton-board-2b73be5bf88ff3d9.js';init('/galton-board-2b73be5bf88ff3d9_bg.wasm');</script><script>(function () {
