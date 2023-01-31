@@ -15,6 +15,7 @@ web-sys = { version = "0.3.60", features = [
     "Document",
     "Element",
     "HtmlCanvasElement",
+    "KeyboardEvent",
     "Performance",
     "Window",
 ] }

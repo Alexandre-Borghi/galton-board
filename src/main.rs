@@ -1,8 +1,11 @@
 use core::f64;
-use log::{debug, info};
-use std::{cell::RefCell, fmt::format, rc::Rc};
+use std::{
+    cell::RefCell,
+    rc::Rc,
+    sync::{Arc, Mutex},
+};
 use wasm_bindgen::{prelude::Closure, JsCast, JsValue};
-use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, Window};
+use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, KeyboardEvent, Window};
 
 const WIDTH: f64 = 1920.;
 const HEIGHT: f64 = 1080.;
@@ -45,22 +48,35 @@ fn main() -> Result<(), JsValue> {
     let choices = (0..ROW_COUNT)
         .map(|i| (0..=i).map(|_| PinChoices::default()).collect())
         .collect();
-    let mut app = App {
+    let app = Arc::new(Mutex::new(App {
         ctx,
         last_frame_ms: window().performance().unwrap().now(),
         choices,
         frame_time: 0.,
         total_paths: 0,
-    };
-    log::info!("{:?}", app.choices);
+    }));
+
     let cb_loop = Rc::new(RefCell::new(None));
     let cb_init = cb_loop.clone();
-    *cb_init.borrow_mut() = Some(Closure::new(Box::new(move |t: f64| {
-        draw(t, &mut app)?;
-        request_animation_frame(cb_loop.borrow().as_ref().unwrap());
-        Ok(())
-    })));
-    request_animation_frame(cb_init.borrow().as_ref().unwrap());
+    {
+        let app = app.clone();
+        *cb_init.borrow_mut() = Some(Closure::new(move |t: f64| {
+            draw(t, &app)?;
+            request_animation_frame(cb_loop.borrow().as_ref().unwrap());
+            Ok(())
+        }));
+        request_animation_frame(cb_init.borrow().as_ref().unwrap());
+    }
+
+    {
+        let cb = Closure::<dyn Fn(KeyboardEvent)>::new(move |_e| {
+            app.lock().unwrap().clear_background();
+            log::debug!("key");
+        });
+        window().add_event_listener_with_callback("keydown", cb.as_ref().unchecked_ref())?;
+        cb.forget();
+    }
+
     Ok(())
 }
 
@@ -74,7 +90,8 @@ fn window() -> Window {
     web_sys::window().unwrap()
 }
 
-fn draw(t: f64, app: &mut App) -> Result<(), JsValue> {
+fn draw(t: f64, app: &Arc<Mutex<App>>) -> Result<(), JsValue> {
+    let mut app = app.lock().unwrap();
     let dt = (t - app.last_frame_ms) / 1000.;
     app.frame_time += dt;
     const FPS: f64 = 60.;
