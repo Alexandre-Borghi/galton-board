@@ -7,7 +7,7 @@
 - [x] Draw all paths in transparency
 - [x] Draw the new path in red
 - [x] Draw the histogram of the probabilities
-- [ ] Make it possible to clear the canvas with a button/keyboard key
+- [x] Make it possible to clear the canvas with a button/keyboard key
 - [ ] Make a slider to adjust the speed of the animation
   - [ ] Allow doing multiple paths in one frame
     - [ ] Separate the line-drawing code from the random code
