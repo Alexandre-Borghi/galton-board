@@ -7,12 +7,13 @@ use std::{
 use wasm_bindgen::{prelude::Closure, JsCast, JsValue};
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, KeyboardEvent, Window};
 
-const WIDTH: f64 = 1920.;
-const HEIGHT: f64 = 1080.;
 const PIN_RADIUS: f64 = 7.;
 const PIN_INTERVAL: f64 = 40.;
 const PINS_START_Y: f64 = PIN_INTERVAL;
 const ROW_COUNT: usize = 16;
+const HEIGHT: f64 = 1080.;
+const WIDTH: f64 = (ROW_COUNT + 2) as f64 * PIN_INTERVAL;
+// const WIDTH: f64 = 1920.;
 const HISTOGRAM_MAX_Y: f64 = PINS_START_Y + ROW_COUNT as f64 * PIN_INTERVAL;
 
 struct App {
@@ -74,7 +75,7 @@ fn main() -> Result<(), JsValue> {
                 return;
             }
             log::debug!("space");
-            app.lock().unwrap().clear_background();
+            app.lock().unwrap().reset();
         });
         window().add_event_listener_with_callback("keydown", cb.as_ref().unchecked_ref())?;
         cb.forget();
@@ -226,5 +227,12 @@ impl App {
         self.ctx.line_to(pin_b_x, pin_b_y);
         self.ctx.stroke();
         Ok(())
+    }
+
+    fn reset(&mut self) {
+        self.choices = (0..ROW_COUNT)
+            .map(|i| (0..=i).map(|_| PinChoices::default()).collect())
+            .collect();
+        self.total_paths = 0;
     }
 }

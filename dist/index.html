@@ -6,6 +6,7 @@
       body {
         margin: 0;
         background-color: rgb(63, 44, 44);
+        height: 100%;
       }
 
       * {
@@ -13,17 +14,17 @@
       }
 
       canvas {
-        width: 100%;
+        max-height: 100%;
       }
     </style>
   
-<link rel="preload" href="/galton-board-d5b02745ac62ebc0_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
-<link rel="modulepreload" href="/galton-board-d5b02745ac62ebc0.js"></head>
+<link rel="preload" href="/galton-board-2b73be5bf88ff3d9_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
+<link rel="modulepreload" href="/galton-board-2b73be5bf88ff3d9.js"></head>
   <body>
     <canvas></canvas>
   
 
-<script type="module">import init from '/galton-board-d5b02745ac62ebc0.js';init('/galton-board-d5b02745ac62ebc0_bg.wasm');</script><script>(function () {
+<script type="module">import init from '/galton-board-2b73be5bf88ff3d9.js';init('/galton-board-2b73be5bf88ff3d9_bg.wasm');</script><script>(function () {
     var protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     var url = protocol + '//' + window.location.host + '/_trunk/ws';
     var poll_interval = 5000;

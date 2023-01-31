@@ -536,11 +536,11 @@ function getImports() {
         const ret = wasm.memory;
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_closure_wrapper155 = function(arg0, arg1, arg2) {
+    imports.wbg.__wbindgen_closure_wrapper162 = function(arg0, arg1, arg2) {
         const ret = makeClosure(arg0, arg1, 22, __wbg_adapter_24);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_closure_wrapper157 = function(arg0, arg1, arg2) {
+    imports.wbg.__wbindgen_closure_wrapper164 = function(arg0, arg1, arg2) {
         const ret = makeMutClosure(arg0, arg1, 24, __wbg_adapter_27);
         return addHeapObject(ret);
     };
@@ -578,7 +578,7 @@ function initSync(module) {
 
 async function init(input) {
     if (typeof input === 'undefined') {
-        input = new URL('galton-board-d5b02745ac62ebc0_bg.wasm', import.meta.url);
+        input = new URL('galton-board-2b73be5bf88ff3d9_bg.wasm', import.meta.url);
     }
     const imports = getImports();
 
