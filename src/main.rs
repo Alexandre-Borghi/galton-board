@@ -69,9 +69,12 @@ fn main() -> Result<(), JsValue> {
     }
 
     {
-        let cb = Closure::<dyn Fn(KeyboardEvent)>::new(move |_e| {
+        let cb = Closure::<dyn Fn(KeyboardEvent)>::new(move |e: KeyboardEvent| {
+            if e.code() != "Space" {
+                return;
+            }
+            log::debug!("space");
             app.lock().unwrap().clear_background();
-            log::debug!("key");
         });
         window().add_event_listener_with_callback("keydown", cb.as_ref().unchecked_ref())?;
         cb.forget();
