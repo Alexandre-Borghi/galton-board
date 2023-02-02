@@ -50,6 +50,10 @@ fn main() -> Result<(), JsValue> {
         .unwrap()
         .dyn_into()
         .unwrap();
+    let animation_speed_slider: HtmlInputElement = document
+        .get_element_by_id("animation-speed")
+        .unwrap()
+        .dyn_into()?;
     let choices = (0..ROW_COUNT)
         .map(|i| (0..=i).map(|_| PinChoices::default()).collect())
         .collect();
@@ -59,7 +63,7 @@ fn main() -> Result<(), JsValue> {
         choices,
         frame_time: 0.,
         total_paths: 0,
-        animation_speed: 15.,
+        animation_speed: animation_speed_slider.value().parse().unwrap(),
     }));
 
     let cb_loop = Rc::new(RefCell::new(None));
@@ -88,10 +92,6 @@ fn main() -> Result<(), JsValue> {
     }
 
     {
-        let animation_speed_slider: HtmlInputElement = document
-            .get_element_by_id("animation-speed")
-            .unwrap()
-            .dyn_into()?;
         let cb = Closure::<dyn Fn(_)>::new(move |e: InputEvent| {
             let new_val = e
                 .target()

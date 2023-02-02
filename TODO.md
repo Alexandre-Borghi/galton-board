@@ -9,10 +9,12 @@
 - [x] Draw the histogram of the probabilities
 - [x] Make it possible to clear the canvas with a button/keyboard key
 - [x] Make a slider to adjust the speed of the animation
+- [x] Take the default value of the slider at the beginning
 - [ ] Allow doing multiple paths in one frame
   - [ ] Separate the line-drawing code from the random code to separate FPS capping from animation speed
 - [ ] Draw normal law on top of histogram
 - [ ] Show total paths count
+- [ ] Show probability for each histogram bar
 - [ ] Animate drawing segment-by-segment
 - [ ] Refactor
   - [ ] Make a function that returns the position of a pin from its "coordinates"
