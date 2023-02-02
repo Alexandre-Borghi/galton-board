@@ -23,9 +23,10 @@ struct App {
     ctx: CanvasRenderingContext2d,
     last_frame_ms: f64,
     choices: Vec<Vec<PinChoices>>,
-    frame_time: f64,
+    update_timer: f64,
     total_paths: u64,
     animation_speed: f64,
+    last_path: [usize; 16],
 }
 
 #[derive(Debug, Default, Clone, Copy)]
@@ -61,9 +62,10 @@ fn main() -> Result<(), JsValue> {
         ctx,
         last_frame_ms: window().performance().unwrap().now(),
         choices,
-        frame_time: 0.,
+        update_timer: 0.,
         total_paths: 0,
         animation_speed: animation_speed_slider.value().parse().unwrap(),
+        last_path: [0; 16],
     }));
 
     let cb_loop = Rc::new(RefCell::new(None));
@@ -71,7 +73,7 @@ fn main() -> Result<(), JsValue> {
     {
         let app = app.clone();
         *cb_init.borrow_mut() = Some(Closure::new(move |t: f64| {
-            draw(t, &app)?;
+            frame(t, &app)?;
             request_animation_frame(cb_loop.borrow().as_ref().unwrap());
             Ok(())
         }));
@@ -119,42 +121,57 @@ fn window() -> Window {
     web_sys::window().unwrap()
 }
 
-fn draw(t: f64, app: &Arc<Mutex<App>>) -> Result<(), JsValue> {
+fn frame(t: f64, app: &Arc<Mutex<App>>) -> Result<(), JsValue> {
     let mut app = app.lock().unwrap();
     let dt = (t - app.last_frame_ms) / 1000.;
-    app.frame_time += dt;
-    if app.frame_time < 1. / app.animation_speed {
-        log::trace!("Skip frame");
+    app.last_frame_ms = t;
+
+    update(dt, &mut app)?;
+    render(&app)?;
+
+    Ok(())
+}
+
+fn update(dt: f64, app: &mut App) -> Result<(), JsValue> {
+    app.update_timer += dt;
+    log::debug!("{}", app.update_timer);
+    if app.update_timer < 1. / app.animation_speed {
         return Ok(());
     }
-    app.frame_time -= 1. / app.animation_speed;
-    app.last_frame_ms = t;
-    app.clear_background();
-    app.draw_pins()?;
+    app.update_timer = 0.;
 
     app.total_paths += 1;
     let mut current_pin = 0;
     for i in 0..ROW_COUNT {
-        if i < ROW_COUNT - 1 {
-            for j in 0..=i {
-                app.draw_segment(i, j, j, app.choices[i][j].times_left as f64 / 300.)?;
-                app.draw_segment(i, j, j + 1, app.choices[i][j].times_right as f64 / 300.)?;
-            }
-        }
-
+        app.last_path[i] = current_pin;
         let goes_left: bool = rand::random();
         if goes_left {
             app.choices[i][current_pin].times_left += 1;
-            if i < ROW_COUNT - 1 {
-                app.draw_segment_with_color(i, current_pin, current_pin, "rgb(255, 51, 51)")?;
-            }
         } else {
             app.choices[i][current_pin].times_right += 1;
-            if i < ROW_COUNT - 1 {
-                app.draw_segment_with_color(i, current_pin, current_pin + 1, "rgb(255, 51, 51)")?;
-            }
             current_pin += 1;
         }
+    }
+
+    Ok(())
+}
+
+fn render(app: &App) -> Result<(), JsValue> {
+    app.clear_background();
+    app.draw_pins()?;
+
+    for i in 0..ROW_COUNT - 1 {
+        for j in 0..=i {
+            app.draw_segment(i, j, j, app.choices[i][j].times_left as f64 / 300.)?;
+            app.draw_segment(i, j, j + 1, app.choices[i][j].times_right as f64 / 300.)?;
+        }
+
+        app.draw_segment_with_color(
+            i,
+            app.last_path[i],
+            app.last_path[i + 1],
+            "rgb(255, 51, 51)",
+        )?;
     }
 
     // Draw histogram
