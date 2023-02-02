@@ -134,22 +134,24 @@ fn frame(t: f64, app: &Arc<Mutex<App>>) -> Result<(), JsValue> {
 
 fn update(dt: f64, app: &mut App) -> Result<(), JsValue> {
     app.update_timer += dt;
-    log::debug!("{}", app.update_timer);
     if app.update_timer < 1. / app.animation_speed {
+        log::debug!("Skip update");
         return Ok(());
     }
     app.update_timer = 0.;
 
-    app.total_paths += 1;
-    let mut current_pin = 0;
-    for i in 0..ROW_COUNT {
-        app.last_path[i] = current_pin;
-        let goes_left: bool = rand::random();
-        if goes_left {
-            app.choices[i][current_pin].times_left += 1;
-        } else {
-            app.choices[i][current_pin].times_right += 1;
-            current_pin += 1;
+    for _ in 0..50 {
+        app.total_paths += 1;
+        let mut current_pin = 0;
+        for i in 0..ROW_COUNT {
+            app.last_path[i] = current_pin;
+            let goes_left: bool = rand::random();
+            if goes_left {
+                app.choices[i][current_pin].times_left += 1;
+            } else {
+                app.choices[i][current_pin].times_right += 1;
+                current_pin += 1;
+            }
         }
     }
 
@@ -162,8 +164,18 @@ fn render(app: &App) -> Result<(), JsValue> {
 
     for i in 0..ROW_COUNT - 1 {
         for j in 0..=i {
-            app.draw_segment(i, j, j, app.choices[i][j].times_left as f64 / 300.)?;
-            app.draw_segment(i, j, j + 1, app.choices[i][j].times_right as f64 / 300.)?;
+            app.draw_segment(
+                i,
+                j,
+                j,
+                app.choices[i][j].times_left as f64 / app.total_paths,
+            )?;
+            app.draw_segment(
+                i,
+                j,
+                j + 1,
+                app.choices[i][j].times_right as f64 / app.total_paths,
+            )?;
         }
 
         app.draw_segment_with_color(

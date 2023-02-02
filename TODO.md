@@ -10,11 +10,11 @@
 - [x] Make it possible to clear the canvas with a button/keyboard key
 - [x] Make a slider to adjust the speed of the animation
 - [x] Take the default value of the slider at the beginning
-- [ ] Allow doing multiple paths in one frame
+- [x] Allow doing multiple paths in one frame
   - [x] Separate the drawing code from the update code to separate FPS
         capping from animation speed
 - [ ] Make the `update()` function not dependent on `requestAnimationFrame()`
-      to go faster.
+      to go faster?
 - [ ] Draw normal law on top of histogram
 - [ ] Show total paths count
 - [ ] Show probability for each histogram bar
