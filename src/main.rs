@@ -168,13 +168,13 @@ fn render(app: &App) -> Result<(), JsValue> {
                 i,
                 j,
                 j,
-                app.choices[i][j].times_left as f64 / app.total_paths as f64,
+                app.choices[i][j].times_left as f64 / (app.total_paths / 4) as f64,
             )?;
             app.draw_segment(
                 i,
                 j,
                 j + 1,
-                app.choices[i][j].times_right as f64 / app.total_paths as f64,
+                app.choices[i][j].times_right as f64 / (app.total_paths / 4) as f64,
             )?;
         }
 
@@ -257,7 +257,7 @@ impl App {
         pin_b: usize,
         alpha: f64,
     ) -> Result<(), JsValue> {
-        self.draw_segment_with_color(row, pin_a, pin_b, &format!("rgb(255, 255, 255, {alpha})"))?;
+        self.draw_segment_with_color(row, pin_a, pin_b, &format!("rgba(255, 255, 255, {alpha})"))?;
         Ok(())
     }
 

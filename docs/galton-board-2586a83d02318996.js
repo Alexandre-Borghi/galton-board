@@ -607,7 +607,7 @@ function initSync(module) {
 
 async function init(input) {
     if (typeof input === 'undefined') {
-        input = new URL('galton-board-348e312e1ea7b229_bg.wasm', import.meta.url);
+        input = new URL('galton-board-2586a83d02318996_bg.wasm', import.meta.url);
     }
     const imports = getImports();
 
